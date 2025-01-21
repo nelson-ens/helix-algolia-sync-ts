@@ -52,6 +52,7 @@ jobs:
           force: true
           branch: ${{ steps.extractBranch.outputs.branch }}
   dispatch:
+    needs: buildPack
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch update to Git Blog Project
