@@ -1,7 +1,7 @@
-import {getInput, setFailed} from '@actions/core';
-import {context} from '@actions/github';
-import {faker} from '@faker-js/faker';
-import {algoliasearch} from 'algoliasearch';
+import { getInput, setFailed } from '@actions/core';
+import { context } from '@actions/github';
+import { faker } from '@faker-js/faker';
+import { algoliasearch } from 'algoliasearch';
 import fetchHelixResourceMetadata from './utils/edsUtils';
 import md5 from './utils/stringUtils';
 
@@ -36,13 +36,10 @@ const run = async () => {
       clientPayload.org,
       clientPayload.site,
       branchName,
-      clientPayload.path,
+      clientPayload.path
     );
 
-    console.log(
-      'Logging helixResourceMetadata: ',
-      JSON.stringify(helixResourceMetadata),
-    );
+    console.log('Logging helixResourceMetadata: ', JSON.stringify(helixResourceMetadata));
 
     const slug = faker.lorem.slug();
     const resourcePath = `/blogs/${slug}.md`;
@@ -71,8 +68,6 @@ const run = async () => {
   }
 };
 
-run().catch(error => {
-  console.error(
-    `Action failed with error: ${(error as Error)?.message ?? 'Unknown error'}`,
-  );
+run().catch((error) => {
+  console.error(`Action failed with error: ${(error as Error)?.message ?? 'Unknown error'}`);
 });
