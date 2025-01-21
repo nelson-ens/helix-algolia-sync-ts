@@ -1,7 +1,10 @@
 import fetchHelixResourceMetadata from './helix';
 
 describe('helix service', () => {
-  beforeEach(() => {});
+  beforeEach(() => {
+    // Clear all mock function calls and reset mock implementation
+    jest.clearAllMocks();
+  });
 
   afterEach(() => {});
 

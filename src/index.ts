@@ -8,7 +8,7 @@ import { RESOURCE_PUBLISHED_EVENT_TYPE, RESOURCE_UNPUBLISHED_EVENT_TYPE } from '
 /**
  *
  */
-const getEnvs = () => {
+export const getEnvs = () => {
   const appId = getInput('algolia-application-id');
   const apiKey = getInput('algolia-api-key');
   const indexName = getInput('algolia-index-name') || 'asdf';
@@ -25,7 +25,7 @@ const getEnvs = () => {
  * @param appId
  * @param indexName
  */
-const processPublishEvent = async (
+export const processPublishEvent = async (
   clientPayload,
   branchName: string,
   apiKey: string,
@@ -51,7 +51,7 @@ const processPublishEvent = async (
  * @param indexName
  * @param clientPayload
  */
-const processUnpublishEvent = async (apiKey: string, appId: string, indexName: string, clientPayload) => {
+export const processUnpublishEvent = async (apiKey: string, appId: string, indexName: string, clientPayload) => {
   console.log('Logging processPublishEvent');
   await deleteRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
 };
@@ -59,7 +59,7 @@ const processUnpublishEvent = async (apiKey: string, appId: string, indexName: s
 /**
  *
  */
-const checkClientPayload = () => {
+export const checkClientPayload = () => {
   /**
    * @type {{org: string, path: string, site: string, status: number}}
    */
@@ -71,19 +71,30 @@ const checkClientPayload = () => {
   return clientPayload;
 };
 
+export const validEventType = (eventType: string) => {
+  if (eventType === RESOURCE_PUBLISHED_EVENT_TYPE || eventType === RESOURCE_UNPUBLISHED_EVENT_TYPE) {
+    return true;
+  }
+
+  return false;
+};
+
 /**
  *
  */
-const getEventType = () => {
+export const getEventType = () => {
   const eventType = context.payload.action;
   console.log('Logging getEventType: ', eventType);
+  if (!validEventType(eventType)) {
+    throw new Error(`Unsupported eventType=${eventType}`);
+  }
   return eventType;
 };
 
 /**
  * run - main entry point
  */
-const run = async () => {
+export const run = async () => {
   console.log('Logging run: ', JSON.stringify(context));
   const { appId, apiKey, indexName, branchName } = getEnvs();
   const clientPayload = checkClientPayload();
@@ -97,7 +108,6 @@ const run = async () => {
       await processUnpublishEvent(apiKey, appId, indexName, clientPayload);
       break;
     default:
-      console.warn(`Do nothing, eventType='${eventType}' is not supported`);
       break;
   }
 };
@@ -105,6 +115,8 @@ const run = async () => {
 /**
  * entry point
  */
-run().catch((error) => {
-  setFailed(`Action failed with error: ${(error as Error)?.message ?? 'Unknown error'}`);
-});
+if (!process.env.JEST_WORKER_ID) {
+  run().catch((error) => {
+    setFailed(`Action failed with error: ${(error as Error)?.message ?? 'Unknown error'}`);
+  });
+}
