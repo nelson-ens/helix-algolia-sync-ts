@@ -10,6 +10,6 @@ jobs:
       - name: Dispatch update to Git Blog Project
         uses: peter-evans/repository-dispatch@v3
         with:
-#          token: ${{ secrets.PAT }}
+          token: ${{ secrets.PAT }}
           repository: nelson-ens/aem-eds-boilerplate
           event-type: update-submodule
