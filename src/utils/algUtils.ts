@@ -33,6 +33,6 @@ export const deleteRecord = async ({ indexName, resourcePath, apiKey, appId }) =
   const client = algoliasearch(appId, apiKey);
   await client.deleteObject({
     indexName,
-    objectID: 'fb9abae9ff9e19a39b6e17309b69694b', //md5(resourcePath),
+    objectID: md5(resourcePath),
   });
 };
