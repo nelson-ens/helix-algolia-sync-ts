@@ -45,5 +45,5 @@ const run = async () => {
 };
 
 run().catch((error) => {
-  console.error(`Action failed with error: ${(error as Error)?.message ?? 'Unknown error'}`);
+  setFailed(`Action failed with error: ${(error as Error)?.message ?? 'Unknown error'}`);
 });
