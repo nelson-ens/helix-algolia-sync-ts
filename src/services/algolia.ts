@@ -1,7 +1,7 @@
 import { algoliasearch } from 'algoliasearch';
-import md5 from './stringUtils';
+import { md5 } from '../utils/stringUtils';
 import { faker } from '@faker-js/faker';
-import { AlgRecord } from '../types/models';
+import { AlgoliaRecord } from '../types';
 
 /**
  *
@@ -36,7 +36,7 @@ export const addOrUpdateRecord = async ({
     category: `${faker.food.ethnicCategory()}`,
     author: `${faker.book.author()}`,
     date: faker.date.anytime().getTime(),
-  } as AlgRecord;
+  } as AlgoliaRecord;
   console.log('Logging record: ', record);
 
   await client.addOrUpdateObject({

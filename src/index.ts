@@ -1,7 +1,7 @@
 import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
-import fetchHelixResourceMetadata from './utils/edsUtils';
-import { addOrUpdateRecord, deleteRecord } from './utils/algUtils';
+import fetchHelixResourceMetadata from './services/helix';
+import { addOrUpdateRecord, deleteRecord } from './services/algolia';
 
 const run = async () => {
   console.log('Logging github event context: ', JSON.stringify(context));

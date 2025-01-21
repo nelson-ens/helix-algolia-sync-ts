@@ -1,7 +1,7 @@
 /**
  *
  */
-export interface AlgRecord extends Record<string, unknown> {
+export interface AlgoliaRecord extends Record<string, unknown> {
   webPath?: string;
   resourcePath?: string;
   name?: string;
