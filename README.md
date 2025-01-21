@@ -1,0 +1,1 @@
+# helix-algolia-sync-ts
