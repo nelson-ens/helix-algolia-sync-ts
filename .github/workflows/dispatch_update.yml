@@ -1,8 +1,9 @@
 name: Dispatch Update Submodule
 on:
-  push:
-    branches:
-      - main
+#  push:
+#    branches:
+#      - main
+  workflow_dispatch:
 jobs:
   dispatch:
     runs-on: ubuntu-latest

@@ -2,7 +2,7 @@ name: "build-pack"
 on:
   push:
     branches:
-      - '*'
+      - main
 jobs:
   buildPack:
     env:
@@ -51,3 +51,12 @@ jobs:
           tags: true
           force: true
           branch: ${{ steps.extractBranch.outputs.branch }}
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch update to Git Blog Project
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          repository: nelson-ens/aem-eds-boilerplate
+          event-type: update-submodule
