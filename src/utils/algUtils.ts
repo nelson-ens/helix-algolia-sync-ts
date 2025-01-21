@@ -21,7 +21,7 @@ export const addOrUpdateRecord = async ({ indexName, resourcePath, apiKey, appId
   };
   console.log('Logging record: ', record);
 
-  const algAddOrUpdateObjResponse = await client.addOrUpdateObject({
+  await client.addOrUpdateObject({
     indexName,
     objectID: md5(resourcePath),
     body: record,

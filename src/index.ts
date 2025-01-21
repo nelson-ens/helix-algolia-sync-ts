@@ -27,24 +27,20 @@ const run = async () => {
 
   const eventType = context.payload.action;
   console.log('Logging eventType: ', eventType);
-  try {
-    const helixResourceMetadata = await fetchHelixResourceMetadata(
-      clientPayload.org,
-      clientPayload.site,
-      branchName,
-      clientPayload.path
-    );
-    console.log('Logging helixResourceMetadata: ', JSON.stringify(helixResourceMetadata));
+  const helixResourceMetadata = await fetchHelixResourceMetadata(
+    clientPayload.org,
+    clientPayload.site,
+    branchName,
+    clientPayload.path
+  );
+  console.log('Logging helixResourceMetadata: ', JSON.stringify(helixResourceMetadata));
 
-    if (eventType === 'resource-published') {
-      addOrUpdateRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
-    } else if (eventType === 'resource-unpublished') {
-      deleteRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
-    } else {
-      console.warn('eventType not supported');
-    }
-  } catch (error) {
-    setFailed((error as Error)?.message ?? 'Unknown error');
+  if (eventType === 'resource-published') {
+    addOrUpdateRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
+  } else if (eventType === 'resource-unpublished') {
+    deleteRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
+  } else {
+    console.warn('eventType not supported');
   }
 };
 
