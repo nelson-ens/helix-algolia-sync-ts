@@ -1,6 +1,7 @@
 import { algoliasearch } from 'algoliasearch';
 import md5 from './stringUtils';
 import { faker } from '@faker-js/faker';
+import { AlgoliaObject } from '../types/models';
 
 export const addOrUpdateRecord = async ({ indexName, resourcePath, apiKey, appId }) => {
   console.log('Logging addOrUpdateRecord: ', resourcePath);
@@ -11,14 +12,14 @@ export const addOrUpdateRecord = async ({ indexName, resourcePath, apiKey, appId
     webPath: `/blogs/${slug}`,
     resourcePath: `${newResourcePath}`,
     name: `${faker.food.dish()}`,
-    lastModified: `${faker.date.anytime().getTime()}`,
+    lastModified: faker.date.anytime().getTime(),
     title: `${faker.food.dish()}`,
     image: `${faker.image.url()}`,
     description: `${faker.food.description()}`,
     category: `${faker.food.ethnicCategory()}`,
     author: `${faker.book.author()}`,
-    date: `${faker.date.anytime().getTime()}`,
-  };
+    date: faker.date.anytime().getTime(),
+  } as AlgoliaObject;
   console.log('Logging record: ', record);
 
   await client.addOrUpdateObject({
