@@ -1,3 +1,5 @@
+import { FetchHlxResMdResponse } from '../types';
+
 /**
  *
  * @param owner
@@ -18,13 +20,16 @@ const fetchHelixResourceMetadata = async ({
 }) => {
   const modPath = path.replace(/^\/*/, '');
   const url = new URL(`https://admin.hlx.page/index/${owner}/${repo}/${branch}/${modPath}`);
-  console.log(`Fetching Helix resource metadata from ${url}`);
+  console.log(`Logging fetchHelixResourceMetadata from: ${url}`);
 
   const response = await fetch(url);
   if (!response.ok)
     throw new Error(`Failed to fetch Helix resource metadata: ${response.status} ${response.statusText}`);
 
-  return response.json();
+  const result = await response.json();
+  console.log(`Logging fetchHelixResourceMetadata result: `, result);
+
+  return result;
 };
 
 export default fetchHelixResourceMetadata;

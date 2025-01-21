@@ -1,28 +1,11 @@
 import { algoliasearch } from 'algoliasearch';
 import { md5 } from '../utils/stringUtils';
 import { faker } from '@faker-js/faker';
-import { AlgoliaRecord } from '../types';
+import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
 
-/**
- *
- * @param appId
- * @param apiKey
- * @param indexName
- * @param resourcePath
- */
-export const addOrUpdateRecord = async ({
-  appId,
-  apiKey,
-  indexName,
-  resourcePath,
-}: {
-  appId: string;
-  apiKey: string;
-  indexName: string;
-  resourcePath: string;
-}) => {
-  console.log('Logging addOrUpdateRecord: ', resourcePath);
-  const client = algoliasearch(appId, apiKey);
+export const buildRecord = (fetchHlxResMdResponse: FetchHlxResMdResponse): AlgoliaRecord => {
+  console.log(`Logging buildRecord...`, fetchHlxResMdResponse?.results[0]?.record ?? {});
+  // uses faker to populate records for development purpose
   const slug = faker.lorem.slug();
   const newResourcePath = `/blogs/${slug}.md`;
   const record = {
@@ -38,7 +21,31 @@ export const addOrUpdateRecord = async ({
     date: faker.date.anytime().getTime(),
   } as AlgoliaRecord;
   console.log('Logging record: ', record);
+  return record;
+};
 
+/**
+ *
+ * @param appId
+ * @param apiKey
+ * @param indexName
+ * @param resourcePath
+ */
+export const addOrUpdateRecord = async ({
+  appId,
+  apiKey,
+  indexName,
+  resourcePath,
+  record,
+}: {
+  appId: string;
+  apiKey: string;
+  indexName: string;
+  resourcePath: string;
+  record: AlgoliaRecord;
+}) => {
+  console.log('Logging addOrUpdateRecord: ', resourcePath);
+  const client = algoliasearch(appId, apiKey);
   await client.addOrUpdateObject({
     indexName,
     objectID: md5(resourcePath),

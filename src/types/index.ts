@@ -20,3 +20,24 @@ export interface FetchHlxResMdParam extends Record<string, unknown> {
   branch: string;
   path: string;
 }
+
+export interface FetchHlxResMdResponse {
+  webPath?: string;
+  resourcePath?: string;
+  results?: FetchHlxResMdResponseResult[];
+}
+
+export interface FetchHlxResMdResponseResult {
+  name?: string;
+  record?: FetchHlxResMdResponseResultRecord;
+}
+
+export interface FetchHlxResMdResponseResultRecord extends Record<string, unknown> {
+  lastModified?: number;
+  title?: string;
+  image?: string;
+  description?: string;
+  category?: string;
+  author?: string;
+  date?: string;
+}
