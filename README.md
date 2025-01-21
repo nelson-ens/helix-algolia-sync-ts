@@ -1,2 +1,2 @@
 # helix-algolia-sync-ts
-# test commit1
+# test commit2
