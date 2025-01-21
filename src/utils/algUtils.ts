@@ -1,9 +1,26 @@
 import { algoliasearch } from 'algoliasearch';
 import md5 from './stringUtils';
 import { faker } from '@faker-js/faker';
-import { AlgoliaObject } from '../types/models';
+import { AlgRecord } from '../types/models';
 
-export const addOrUpdateRecord = async ({ indexName, resourcePath, apiKey, appId }) => {
+/**
+ *
+ * @param appId
+ * @param apiKey
+ * @param indexName
+ * @param resourcePath
+ */
+export const addOrUpdateRecord = async ({
+  appId,
+  apiKey,
+  indexName,
+  resourcePath,
+}: {
+  appId: string;
+  apiKey: string;
+  indexName: string;
+  resourcePath: string;
+}) => {
   console.log('Logging addOrUpdateRecord: ', resourcePath);
   const client = algoliasearch(appId, apiKey);
   const slug = faker.lorem.slug();
@@ -19,7 +36,7 @@ export const addOrUpdateRecord = async ({ indexName, resourcePath, apiKey, appId
     category: `${faker.food.ethnicCategory()}`,
     author: `${faker.book.author()}`,
     date: faker.date.anytime().getTime(),
-  } as AlgoliaObject;
+  } as AlgRecord;
   console.log('Logging record: ', record);
 
   await client.addOrUpdateObject({
@@ -29,7 +46,24 @@ export const addOrUpdateRecord = async ({ indexName, resourcePath, apiKey, appId
   });
 };
 
-export const deleteRecord = async ({ indexName, resourcePath, apiKey, appId }) => {
+/**
+ *
+ * @param appId
+ * @param apiKey
+ * @param indexName
+ * @param resourcePath
+ */
+export const deleteRecord = async ({
+  appId,
+  apiKey,
+  indexName,
+  resourcePath,
+}: {
+  appId: string;
+  apiKey: string;
+  indexName: string;
+  resourcePath: string;
+}) => {
   console.log('Logging deleteRecord: ', resourcePath);
   const client = algoliasearch(appId, apiKey);
   await client.deleteObject({

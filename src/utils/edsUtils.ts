@@ -1,12 +1,21 @@
 /**
  *
- * @param owner {string}
- * @param repo {string}
- * @param branch {string}
- * @param path {string}
- * @returns {Promise<{webPath: string, resourcePath: string, results: {name: string, record: Record<string, any>}[]}>}
+ * @param owner
+ * @param repo
+ * @param branch
+ * @param path
  */
-const fetchHelixResourceMetadata = async (owner, repo, branch, path) => {
+const fetchHelixResourceMetadata = async ({
+  owner,
+  repo,
+  branch,
+  path,
+}: {
+  owner: string;
+  repo: string;
+  branch: string;
+  path: string;
+}) => {
   const modPath = path.replace(/^\/*/, '');
   const url = new URL(`https://admin.hlx.page/index/${owner}/${repo}/${branch}/${modPath}`);
   console.log(`Fetching Helix resource metadata from ${url}`);
