@@ -1,9 +1,7 @@
 import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
-import { faker } from '@faker-js/faker';
-import { algoliasearch } from 'algoliasearch';
 import fetchHelixResourceMetadata from './utils/edsUtils';
-import md5 from './utils/stringUtils';
+import { addOrUpdateRecord, deleteRecord } from './utils/algUtils';
 
 const run = async () => {
   console.log('Logging github event context: ', JSON.stringify(context));
@@ -14,8 +12,6 @@ const run = async () => {
   console.log('Logging apiKey: ', apiKey);
   console.log('Logging appId: ', appId);
   console.log('Logging indexName: ', indexName);
-
-  const client = algoliasearch(appId, apiKey);
 
   const branchName = context.ref.replace('refs/heads/', '');
   console.log('Logging branchName: ', branchName);
@@ -38,31 +34,15 @@ const run = async () => {
       branchName,
       clientPayload.path
     );
-
     console.log('Logging helixResourceMetadata: ', JSON.stringify(helixResourceMetadata));
 
-    const slug = faker.lorem.slug();
-    const resourcePath = `/blogs/${slug}.md`;
-
-    const record = {
-      webPath: `/blogs/${slug}`,
-      resourcePath: `${resourcePath}`,
-      name: `${faker.food.dish()}`,
-      lastModified: `${faker.date.anytime().getTime()}`,
-      title: `${faker.food.dish()}`,
-      image: `${faker.image.url()}`,
-      description: `${faker.food.description()}`,
-      category: `${faker.food.ethnicCategory()}`,
-      author: `${faker.book.author()}`,
-      date: `${faker.date.anytime().getTime()}`,
-    };
-    console.log('Logging record: ', record);
-
-    const algAddOrUpdateObjResponse = await client.addOrUpdateObject({
-      indexName,
-      objectID: md5(resourcePath),
-      body: record,
-    });
+    if (eventType === 'resource-published') {
+      addOrUpdateRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
+    } else if (eventType === 'resource-unpublished') {
+      deleteRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
+    } else {
+      console.warn('eventType not supported');
+    }
   } catch (error) {
     setFailed((error as Error)?.message ?? 'Unknown error');
   }
