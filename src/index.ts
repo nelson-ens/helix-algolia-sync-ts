@@ -84,7 +84,7 @@ const getEventType = () => {
  * run - main entry point
  */
 const run = async () => {
-  console.log('Logging run TEST MSG: ', JSON.stringify(context));
+  console.log('Logging run: ', JSON.stringify(context));
   const { appId, apiKey, indexName, branchName } = getEnvs();
   const clientPayload = checkClientPayload();
   const eventType = getEventType();
