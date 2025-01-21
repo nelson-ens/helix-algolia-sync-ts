@@ -1,0 +1,15 @@
+﻿name: Helix Sync With Algolia Index
+description: Updates the Algolia index, adding or removing resources as specified by the Adobe Helix resource-published and resource-unpublished events
+inputs:
+  algolia-application-id:
+    description: 'The application ID for the Algolia application'
+    required: true
+  algolia-api-key:
+    description: 'The API key for the Algolia application'
+    required: true
+  algolia-index-name:
+    description: 'The name of the Algolia index to update'
+    required: true
+runs:
+  using: node20
+  main: dist/index.js

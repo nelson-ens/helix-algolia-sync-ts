@@ -1,0 +1,14 @@
+{
+  "extends": "./node_modules/gts/",
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".ts"]
+      }
+    }
+  },
+  "ignorePatterns": [
+    "**/dist",
+    "**/build"
+  ]
+}
