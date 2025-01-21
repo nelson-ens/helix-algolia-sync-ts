@@ -2,19 +2,19 @@ import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
 import fetchHelixResourceMetadata from './services/helix';
 import { addOrUpdateRecord, transformToAlgRecord, deleteRecord } from './services/algolia';
-import { FetchHlxResMdParam, FetchHlxResMdResponse } from './types';
+import { AppCfg, FetchHlxResMdParam, FetchHlxResMdResponse } from './types';
 import { RESOURCE_PUBLISHED_EVENT_TYPE, RESOURCE_UNPUBLISHED_EVENT_TYPE } from './utils/constants';
 
 /**
  *
  */
-export const getEnvs = () => {
+export const getAppCfg = () => {
   const appId = getInput('algolia-application-id');
   const apiKey = getInput('algolia-api-key');
   const indexName = getInput('algolia-index-name') || 'asdf';
   const branchName = context.ref.replace('refs/heads/', '');
   console.log('Logging getEnvs:', { appId, apiKey, indexName, branchName });
-  return { appId, apiKey, indexName, branchName };
+  return <AppCfg>{ appId, apiKey, indexName, branchName };
 };
 
 /**
@@ -71,6 +71,10 @@ export const checkClientPayload = () => {
   return clientPayload;
 };
 
+/**
+ *
+ * @param eventType
+ */
 export const validEventType = (eventType: string) => {
   if (eventType === RESOURCE_PUBLISHED_EVENT_TYPE || eventType === RESOURCE_UNPUBLISHED_EVENT_TYPE) {
     return true;
@@ -96,7 +100,7 @@ export const getEventType = () => {
  */
 export const run = async () => {
   console.log('Logging run: ', JSON.stringify(context));
-  const { appId, apiKey, indexName, branchName } = getEnvs();
+  const { appId, apiKey, indexName, branchName } = getAppCfg();
   const clientPayload = checkClientPayload();
   const eventType = getEventType();
 

@@ -53,3 +53,10 @@ export interface FetchHlxResMdResponseResultRecord extends Record<string, unknow
   author?: string;
   date?: string;
 }
+
+export interface AppCfg {
+  appId: string;
+  apiKey: string;
+  indexName: string;
+  branchName: string;
+}
