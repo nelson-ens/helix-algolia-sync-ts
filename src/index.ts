@@ -25,13 +25,13 @@ const getEnvs = () => {
  * @param appId
  * @param indexName
  */
-async function processPublishEvent(
+const processPublishEvent = async (
   clientPayload,
   branchName: string,
   apiKey: string,
   appId: string,
   indexName: string
-) {
+) => {
   console.log('Logging processPublishEvent');
   const fetchHlxResMdResponse: FetchHlxResMdResponse = await fetchHelixResourceMetadata(<FetchHlxResMdParam>{
     owner: clientPayload.org,
@@ -42,7 +42,7 @@ async function processPublishEvent(
 
   const record = transformToAlgRecord(fetchHlxResMdResponse);
   await addOrUpdateRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path, record });
-}
+};
 
 /**
  *
@@ -51,10 +51,10 @@ async function processPublishEvent(
  * @param indexName
  * @param clientPayload
  */
-async function processUnpublishEvent(apiKey: string, appId: string, indexName: string, clientPayload) {
+const processUnpublishEvent = async (apiKey: string, appId: string, indexName: string, clientPayload) => {
   console.log('Logging processPublishEvent');
   await deleteRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
-}
+};
 
 /**
  *

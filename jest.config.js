@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   collectCoverage: true,
   coverageReporters: ['lcov', 'text-summary'],
-  collectCoverageFrom: ['src/**/*.spec.ts'],
-  coveragePathIgnorePatterns: ['/node_modules/', '/__tests__/'],
-  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  collectCoverageFrom: ['src/**/*.ts'],
+  coveragePathIgnorePatterns: ['/node_modules/', '/__tests__/', '/dist/', , '/lib/', 'constants.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/lib/'],
 };

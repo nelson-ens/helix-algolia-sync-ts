@@ -1,4 +1,4 @@
-import { FetchHlxResMdResponse } from '../types';
+import { ADMIN_HLX_PAGE_INDEX_URL_PREFIX } from '../utils/constants';
 
 /**
  *
@@ -19,8 +19,8 @@ const fetchHelixResourceMetadata = async ({
   path: string;
 }) => {
   const modPath = path.replace(/^\/*/, '');
-  const url = new URL(`https://admin.hlx.page/index/${owner}/${repo}/${branch}/${modPath}`);
-  console.log(`Logging fetchHelixResourceMetadata from: ${url}`);
+  const url = new URL(`${ADMIN_HLX_PAGE_INDEX_URL_PREFIX}/${owner}/${repo}/${branch}/${modPath}`);
+  console.log(`Logging fetchHelixResourceMetadata: `, { url, modPath });
 
   const response = await fetch(url);
   if (!response.ok)
@@ -28,6 +28,7 @@ const fetchHelixResourceMetadata = async ({
 
   const result = await response.json();
   console.log(`Logging fetchHelixResourceMetadata result: `, result);
+
   return result;
 };
 
