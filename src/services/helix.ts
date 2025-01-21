@@ -28,7 +28,6 @@ const fetchHelixResourceMetadata = async ({
 
   const result = await response.json();
   console.log(`Logging fetchHelixResourceMetadata result: `, result);
-
   return result;
 };
 

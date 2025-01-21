@@ -3,8 +3,8 @@ import { md5 } from '../utils/stringUtils';
 import { faker } from '@faker-js/faker';
 import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
 
-export const buildRecord = (fetchHlxResMdResponse: FetchHlxResMdResponse): AlgoliaRecord => {
-  console.log(`Logging buildRecord...`, fetchHlxResMdResponse?.results[0]?.record ?? {});
+export const transformToAlgRecord = (fetchHlxResMdResponse: FetchHlxResMdResponse): AlgoliaRecord => {
+  console.log(`Logging transformToAlgRecord...`, fetchHlxResMdResponse?.results[0]?.record ?? {});
   // uses faker to populate records for development purpose
   const slug = faker.lorem.slug();
   const newResourcePath = `/blogs/${slug}.md`;
@@ -20,7 +20,7 @@ export const buildRecord = (fetchHlxResMdResponse: FetchHlxResMdResponse): Algol
     author: `${faker.book.author()}`,
     date: faker.date.anytime().getTime(),
   } as AlgoliaRecord;
-  console.log('Logging record: ', record);
+  console.log('Logging transformToAlgRecord: ', record);
   return record;
 };
 
@@ -46,11 +46,13 @@ export const addOrUpdateRecord = async ({
 }) => {
   console.log('Logging addOrUpdateRecord: ', resourcePath);
   const client = algoliasearch(appId, apiKey);
-  await client.addOrUpdateObject({
+  const response = await client.addOrUpdateObject({
     indexName,
     objectID: md5(resourcePath),
     body: record,
   });
+
+  console.log(`Logging addOrUpdateRecord response: `, response);
 };
 
 /**
