@@ -1,6 +1,6 @@
-import { checkClientPayload, getEventType, run, validEventType } from './index';
 import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
+import { checkClientPayload, getEventType, run, validEventType } from './index';
 
 // Mock getInput and setFailed functions
 jest.mock('@actions/core', () => ({

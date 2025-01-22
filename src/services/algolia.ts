@@ -1,6 +1,6 @@
 import { algoliasearch } from 'algoliasearch';
-import { md5 } from '../utils/stringUtils';
 import { faker } from '@faker-js/faker';
+import md5 from '../utils/stringUtils';
 import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
 
 export const transformToAlgRecord = (fetchHlxResMdResponse: FetchHlxResMdResponse): AlgoliaRecord => {

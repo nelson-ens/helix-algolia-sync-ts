@@ -1,4 +1,4 @@
-import { md5 } from './stringUtils';
+import md5 from './stringUtils';
 
 describe('stringUtils functions', () => {
   beforeEach(() => {});

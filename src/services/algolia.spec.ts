@@ -1,7 +1,5 @@
 import { transformToAlgRecord, deleteRecord, addOrUpdateRecord } from './algolia';
 
-transformToAlgRecord;
-
 describe('algolia service', () => {
   beforeEach(() => {});
 

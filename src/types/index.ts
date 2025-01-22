@@ -33,17 +33,6 @@ export interface FetchHlxResMdParam extends Record<string, unknown> {
   path: string;
 }
 
-export interface FetchHlxResMdResponse {
-  webPath?: string;
-  resourcePath?: string;
-  results?: FetchHlxResMdResponseResult[];
-}
-
-export interface FetchHlxResMdResponseResult {
-  name?: string;
-  record?: FetchHlxResMdResponseResultRecord;
-}
-
 export interface FetchHlxResMdResponseResultRecord extends Record<string, unknown> {
   lastModified?: number;
   title?: string;
@@ -52,6 +41,17 @@ export interface FetchHlxResMdResponseResultRecord extends Record<string, unknow
   category?: string;
   author?: string;
   date?: string;
+}
+
+export interface FetchHlxResMdResponseResult {
+  name?: string;
+  record?: FetchHlxResMdResponseResultRecord;
+}
+
+export interface FetchHlxResMdResponse {
+  webPath?: string;
+  resourcePath?: string;
+  results?: FetchHlxResMdResponseResult[];
 }
 
 export interface AppCfg {
