@@ -1,4 +1,4 @@
-import { transformToAlgRecord, deleteRecord, addOrUpdateRecord } from './algolia';
+import { deleteRecord, addOrUpdateRecord } from './algolia';
 
 describe('algolia service', () => {
   beforeEach(() => {});

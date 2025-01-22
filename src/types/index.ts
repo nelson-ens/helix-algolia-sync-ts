@@ -60,3 +60,10 @@ export interface AppCfg {
   indexName: string;
   branchName: string;
 }
+
+export interface ClientPayload {
+  org?: string;
+  paths?: string[];
+  path?: string;
+  site?: string;
+}

@@ -1,9 +1,30 @@
 import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
 import fetchHelixResourceMetadata from './services/helix';
-import { addOrUpdateRecord, transformToAlgRecord, deleteRecord } from './services/algolia';
-import { AppCfg, FetchHlxResMdParam, FetchHlxResMdResponse } from './types';
-import { RESOURCE_PUBLISHED_EVENT_TYPE, RESOURCE_UNPUBLISHED_EVENT_TYPE } from './utils/constants';
+import { addOrUpdateRecord, deleteRecord } from './services/algolia';
+import { AppCfg, ClientPayload, FetchHlxResMdParam } from './types';
+import {
+  RESOURCE_PUBLISHED_EVENT_TYPE,
+  RESOURCE_UNPUBLISHED_EVENT_TYPE,
+  RESOURCES_PUBLISHED_EVENT_TYPE,
+  RESOURCES_UNPUBLISHED_EVENT_TYPE,
+} from './utils/constants';
+
+interface ProcessPublishEventParams {
+  clientPayload: ClientPayload;
+  branchName: string;
+  apiKey: string;
+  appId: string;
+  indexName: string;
+  paths: string[];
+}
+
+interface ProcessUnpublishEventParams {
+  apiKey: string;
+  appId: string;
+  indexName: string;
+  paths: string[];
+}
 
 /**
  *
@@ -25,23 +46,29 @@ export const getAppCfg = () => {
  * @param appId
  * @param indexName
  */
-export const processPublishEvent = async (
+export const processPublishEvent = async ({
   clientPayload,
-  branchName: string,
-  apiKey: string,
-  appId: string,
-  indexName: string
-) => {
+  branchName,
+  apiKey,
+  appId,
+  indexName,
+  paths,
+}: ProcessPublishEventParams) => {
   console.log('Logging processPublishEvent');
-  const fetchHlxResMdResponse: FetchHlxResMdResponse = await fetchHelixResourceMetadata(<FetchHlxResMdParam>{
-    owner: clientPayload.org,
-    repo: clientPayload.site,
-    branch: branchName,
-    path: clientPayload.path,
-  });
-
-  const record = transformToAlgRecord(fetchHlxResMdResponse);
-  await addOrUpdateRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path, record });
+  const promises = [];
+  for (let i = 0; i < paths.length; i += 1) {
+    const path = paths[i];
+    promises.push(
+      fetchHelixResourceMetadata(<FetchHlxResMdParam>{
+        owner: clientPayload.org,
+        repo: clientPayload.site,
+        branch: branchName,
+        path,
+      })
+    );
+  }
+  const records = await Promise.all(promises);
+  await addOrUpdateRecord({ apiKey, appId, indexName, records });
 };
 
 /**
@@ -51,9 +78,9 @@ export const processPublishEvent = async (
  * @param indexName
  * @param clientPayload
  */
-export const processUnpublishEvent = async (apiKey: string, appId: string, indexName: string, clientPayload) => {
-  console.log('Logging processPublishEvent');
-  await deleteRecord({ apiKey, appId, indexName, resourcePath: clientPayload.path });
+export const processUnpublishEvent = async ({ apiKey, appId, indexName, paths }: ProcessUnpublishEventParams) => {
+  console.log('Logging processUnpublishEvent');
+  await deleteRecord({ apiKey, appId, indexName, paths });
 };
 
 /**
@@ -63,7 +90,7 @@ export const checkClientPayload = () => {
   /**
    * @type {{org: string, path: string, site: string, status: number}}
    */
-  const clientPayload = context.payload.client_payload;
+  const clientPayload: ClientPayload = context.payload.client_payload;
   console.log('Logging checkClientPayload: ', clientPayload);
   if (!clientPayload) {
     throw new Error('No client payload found.');
@@ -76,23 +103,40 @@ export const checkClientPayload = () => {
  * @param eventType
  */
 export const validEventType = (eventType: string) => {
-  if (eventType === RESOURCE_PUBLISHED_EVENT_TYPE || eventType === RESOURCE_UNPUBLISHED_EVENT_TYPE) {
+  if (
+    eventType === RESOURCE_PUBLISHED_EVENT_TYPE ||
+    eventType === RESOURCES_PUBLISHED_EVENT_TYPE ||
+    eventType === RESOURCE_UNPUBLISHED_EVENT_TYPE ||
+    eventType === RESOURCES_UNPUBLISHED_EVENT_TYPE
+  ) {
     return true;
   }
-
   return false;
 };
 
 /**
  *
  */
-export const getEventType = () => {
+export const extractEventType = () => {
   const eventType = context.payload.action;
   console.log('Logging getEventType: ', eventType);
   if (!validEventType(eventType)) {
     throw new Error(`Unsupported eventType=${eventType}`);
   }
   return eventType;
+};
+
+export const extractPathsFromPayload = (clientPayload: ClientPayload) => {
+  console.log('Logging extractPathsFromPayload');
+  if (clientPayload) {
+    if (clientPayload.paths && clientPayload.paths.length > 0) {
+      return clientPayload.paths;
+    }
+    if (clientPayload.path && clientPayload.path.length > 0) {
+      return [clientPayload.path];
+    }
+  }
+  throw new Error(`Unable to proceed due to invalid or missing paths in ClientPayload`);
 };
 
 /**
@@ -102,14 +146,17 @@ export const run = async () => {
   console.log('Logging run: ', JSON.stringify(context));
   const { appId, apiKey, indexName, branchName } = getAppCfg();
   const clientPayload = checkClientPayload();
-  const eventType = getEventType();
+  const eventType = extractEventType();
+  const paths: string[] = extractPathsFromPayload(clientPayload);
 
   switch (eventType) {
     case RESOURCE_PUBLISHED_EVENT_TYPE:
-      await processPublishEvent(clientPayload, branchName, apiKey, appId, indexName);
+    case RESOURCES_PUBLISHED_EVENT_TYPE:
+      await processPublishEvent({ clientPayload, branchName, apiKey, appId, indexName, paths });
       break;
     case RESOURCE_UNPUBLISHED_EVENT_TYPE:
-      await processUnpublishEvent(apiKey, appId, indexName, clientPayload);
+    case RESOURCES_UNPUBLISHED_EVENT_TYPE:
+      await processUnpublishEvent({ apiKey, appId, indexName, paths });
       break;
     default:
       break;

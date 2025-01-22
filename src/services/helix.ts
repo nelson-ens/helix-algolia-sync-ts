@@ -1,4 +1,27 @@
+import { faker } from '@faker-js/faker';
 import { ADMIN_HLX_PAGE_INDEX_URL_PREFIX } from '../utils/constants';
+import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
+
+export const transformToAlgRecord = (fetchHlxResMdResponse: FetchHlxResMdResponse): AlgoliaRecord => {
+  console.log(`Logging transformToAlgRecord...`, fetchHlxResMdResponse?.results[0]?.record ?? {});
+  // uses faker to populate records for development purpose
+  const slug = faker.lorem.slug();
+  const newResourcePath = `/blogs/${slug}.md`;
+  const record = {
+    webPath: `/blogs/${slug}`,
+    resourcePath: `${newResourcePath}`,
+    name: `${faker.food.dish()}`,
+    lastModified: faker.date.anytime().getTime(),
+    title: `${faker.food.dish()}`,
+    image: `${faker.image.url()}`,
+    description: `${faker.food.description()}`,
+    category: `${faker.food.ethnicCategory()}`,
+    author: `${faker.book.author()}`,
+    date: faker.date.anytime().getTime(),
+  } as AlgoliaRecord;
+  console.log('Logging transformToAlgRecord: ', record);
+  return record;
+};
 
 /**
  *
@@ -29,7 +52,7 @@ const fetchHelixResourceMetadata = async ({
   const result = await response.json();
   console.log(`Logging fetchHelixResourceMetadata result: `, result);
 
-  return result;
+  return transformToAlgRecord(result);
 };
 
 export default fetchHelixResourceMetadata;
