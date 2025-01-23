@@ -43,9 +43,23 @@ jest.mock('@actions/github', () => ({
 }));
 
 describe('main index', () => {
+  const goodClientPayload = {
+    org: 'nelson-ens',
+    path: '/index.md',
+    site: 'aem-eds-boilerplate',
+    status: 200,
+  };
+
+  const emptyPathsClientPayload = {
+    org: 'nelson-ens',
+    site: 'aem-eds-boilerplate',
+    status: 200,
+  };
+
   beforeEach(() => {
     // Clear all mock function calls and reset mock implementation
     jest.clearAllMocks();
+    context.payload.client_payload = goodClientPayload;
   });
 
   afterEach(() => {});
@@ -62,41 +76,41 @@ describe('main index', () => {
 
   it('should run processPublishEvent', async () => {
     context.payload.action = 'resource-published';
-    const helperSpy1 = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
-    const helperSpy2 = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
+    const processPublishEventSpy = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
+    const processUnpublishEventSpy = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
 
     const x = await myModule.run();
-    expect(helperSpy1).toHaveBeenCalledTimes(1);
-    expect(helperSpy2).toHaveBeenCalledTimes(0);
+    expect(processPublishEventSpy).toHaveBeenCalledTimes(1);
+    expect(processUnpublishEventSpy).toHaveBeenCalledTimes(0);
 
-    helperSpy1.mockRestore();
-    helperSpy2.mockRestore();
+    processPublishEventSpy.mockRestore();
+    processUnpublishEventSpy.mockRestore();
   });
 
   it('should run processUnPublishEvent', async () => {
     context.payload.action = 'resource-unpublished';
-    const helperSpy1 = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
-    const helperSpy2 = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
+    const processUnpublishEventSpy = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
+    const processPublishEventSpy = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
 
     const x = await myModule.run();
-    expect(helperSpy1).toHaveBeenCalledTimes(1);
-    expect(helperSpy2).toHaveBeenCalledTimes(0);
+    expect(processUnpublishEventSpy).toHaveBeenCalledTimes(1);
+    expect(processPublishEventSpy).toHaveBeenCalledTimes(0);
 
-    helperSpy1.mockRestore();
-    helperSpy2.mockRestore();
+    processUnpublishEventSpy.mockRestore();
+    processPublishEventSpy.mockRestore();
   });
 
-  it('should run either processPublishEvent nor processUnPublishEvent', async () => {
+  it('should not run neither processPublishEvent nor processUnPublishEvent', async () => {
     context.payload.action = 'blah';
-    const helperSpy1 = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
-    const helperSpy2 = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
+    const processUnpublishEventSpy = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
+    const processPublishEventSpy = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
 
     await expect(async () => {
       await myModule.run();
     }).rejects.toThrowError();
 
-    helperSpy1.mockRestore();
-    helperSpy2.mockRestore();
+    processUnpublishEventSpy.mockRestore();
+    processPublishEventSpy.mockRestore();
     context.payload.action = 'resource-published';
   });
 
@@ -105,7 +119,6 @@ describe('main index', () => {
     (getInput as jest.Mock).mockReturnValueOnce('algolia-application-id');
     (getInput as jest.Mock).mockReturnValueOnce('algolia-api-key');
     (getInput as jest.Mock).mockReturnValueOnce('algolia-index-name');
-    context.payload.client_payload = undefined;
 
     expect(myModule.getAppCfg()).toEqual({
       appId: 'algolia-application-id',
@@ -145,28 +158,29 @@ describe('main index', () => {
   });
 
   it('should throw an error in extractPathsFromPayload', async () => {
-    const clientPayloadMock = {
-      org: 'nelson-ens',
-      site: 'aem-eds-boilerplate',
-      status: 200,
-    };
-
-    expect(() => {
-      myModule.getPathsFromClientPayload(clientPayloadMock);
-    }).toThrowError('Unable to proceed due to invalid or missing paths in ClientPayload');
-
-    expect(() => {
+    expect(myModule.getPathsFromClientPayload(emptyPathsClientPayload)).toEqual([]);
+    expect(
       myModule.getPathsFromClientPayload({
-        ...clientPayloadMock,
+        ...emptyPathsClientPayload,
         path: '',
-      } as ClientPayload);
-    }).toThrowError('Unable to proceed due to invalid or missing paths in ClientPayload');
+      } as ClientPayload)
+    ).toEqual([]);
+    expect(
+      myModule.getPathsFromClientPayload({
+        ...emptyPathsClientPayload,
+        paths: [],
+      } as ClientPayload)
+    ).toEqual([]);
+    expect(
+      myModule.getPathsFromClientPayload({
+        ...emptyPathsClientPayload,
+        paths: undefined,
+      } as ClientPayload)
+    ).toEqual([]);
   });
 
   it('should return truthy if eventType is valid', async () => {
     // Mock the return values for getInput
-    context.payload.client_payload = undefined;
-
     expect(myModule.validEventType('resource-published')).toBeTruthy();
     expect(myModule.validEventType('resources-published')).toBeTruthy();
     expect(myModule.validEventType('resource-unpublished')).toBeTruthy();
@@ -174,9 +188,6 @@ describe('main index', () => {
   });
 
   it('should return falsy if eventType is valid', async () => {
-    // Mock the return values for getInput
-    context.payload.client_payload = undefined;
-
     expect(myModule.validEventType('RESOURCE-PUBLISHED')).toBeFalsy();
     expect(myModule.validEventType('resource-publishedd')).toBeFalsy();
     expect(myModule.validEventType('RESOURCE-UNPUBLISHED')).toBeFalsy();
@@ -219,5 +230,20 @@ describe('main index', () => {
       paths: ['/blogs/blog1.md', '/blogs/blog2.md', '/blogs/blog3.md'],
     });
     expect(deleteRecord).toBeCalledTimes(1);
+  });
+
+  it('should not run neither processPublishEvent nor processUnPublishEvent', async () => {
+    context.payload.action = 'resource-published';
+    context.payload.client_payload = emptyPathsClientPayload;
+
+    const processPublishEventSpy = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
+    const processUnpublishEventSpy = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
+
+    await myModule.run();
+    expect(processPublishEventSpy).toHaveBeenCalledTimes(0);
+    expect(processUnpublishEventSpy).toHaveBeenCalledTimes(0);
+
+    processUnpublishEventSpy.mockRestore();
+    processPublishEventSpy.mockRestore();
   });
 });

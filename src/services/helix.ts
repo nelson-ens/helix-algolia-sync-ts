@@ -3,7 +3,7 @@ import { ADMIN_HLX_PAGE_INDEX_URL_PREFIX } from '../utils/constants';
 import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
 
 export const buildAlgoliaRecord = (hlxResource: FetchHlxResMdResponse): AlgoliaRecord => {
-  console.log(`Logging buildAlgoliaRecord...`, hlxResource);
+  console.log(`Logging helix::buildAlgoliaRecord...`, hlxResource);
 
   if (hlxResource && hlxResource.results && hlxResource.results[0] && hlxResource.results[0].record) {
     // TODO:  replace faker with real data once schema is ready
@@ -20,7 +20,6 @@ export const buildAlgoliaRecord = (hlxResource: FetchHlxResMdResponse): AlgoliaR
       date: faker.date.anytime().getTime(),
     } as AlgoliaRecord;
   }
-
   return undefined;
 };
 
@@ -44,21 +43,22 @@ export const fetchHelixResourceMetadata = async ({
 }) => {
   const modPath = path.replace(/^\/*/, '');
   const url = new URL(`${ADMIN_HLX_PAGE_INDEX_URL_PREFIX}/${owner}/${repo}/${branch}/${modPath}`);
-  console.log(`Logging fetchHelixResourceMetadata: `, { url, modPath });
+  console.log(`Logging helix::fetchHelixResourceMetadata... `, { url, modPath });
 
-  const response = await fetch(url);
-  console.log(`Fetch response: `, JSON.stringify(response));
+  const fetchRsp = await fetch(url);
+  console.log(`helix::fetchHelixResourceMetadata fetchRsp: `, JSON.stringify(fetchRsp));
 
-  if (!response.ok)
-    throw new Error(`Failed to fetch Helix resource metadata: ${response.status} ${response.statusText}`);
+  if (!fetchRsp.ok)
+    throw new Error(`Failed to fetch Helix resource metadata: ${fetchRsp.status} ${fetchRsp.statusText}`);
 
-  const jsonRsp = await response.json();
-  console.log(`Logging fetchHelixResourceMetadata result: `, JSON.stringify(jsonRsp));
+  const jsonBody = await fetchRsp.json();
+  console.log(`helix::fetchHelixResourceMetadataLogging jsonRsp: `, JSON.stringify(jsonBody));
 
   // page does not exist
-  if (JSON.stringify(jsonRsp).includes('requested path returned a 301 or 404')) {
+  if (JSON.stringify(jsonBody).includes('requested path returned a 301 or 404')) {
     return undefined;
   }
+
   // transform to AlgRecord
-  return buildAlgoliaRecord(jsonRsp);
+  return buildAlgoliaRecord(jsonBody);
 };

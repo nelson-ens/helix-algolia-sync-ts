@@ -30,13 +30,13 @@ interface ProcessUnpublishEventParams {
  *
  */
 export const getAppCfg = () => {
-  console.log('Logging getAppCfg...');
+  console.log('Logging index::getAppCfg...');
   const appId = getInput('algolia-application-id');
   const apiKey = getInput('algolia-api-key');
-  const indexName = getInput('algolia-index-name') || 'asdf'; // TODO: remove 'asdf' default
+  const idxName = getInput('algolia-index-name') || 'asdf'; // TODO: remove 'asdf' default
   const branchName = context.ref.replace('refs/heads/', '');
-  console.log('Logging getAppCfg:', { appId, apiKey, indexName, branchName });
-  return <AppCfg>{ appId, apiKey, indexName, branchName };
+  console.log('index::getAppCfg: ', { appId, apiKey, idxName, branchName });
+  return <AppCfg>{ appId, apiKey, indexName: idxName, branchName };
 };
 
 /**
@@ -56,7 +56,7 @@ export const processPublishEvent = async ({
   indexName,
   paths,
 }: ProcessPublishEventParams) => {
-  console.log('Logging processPublishEvent...');
+  console.log('Logging index::processPublishEvent...');
   const promises = [];
   for (let i = 0; i < paths.length; i += 1) {
     const path = paths[i];
@@ -82,7 +82,7 @@ export const processPublishEvent = async ({
  * @param paths
  */
 export const processUnpublishEvent = async ({ apiKey, appId, indexName, paths }: ProcessUnpublishEventParams) => {
-  console.log('Logging processUnpublishEvent...');
+  console.log('Logging index::processUnpublishEvent...');
   await deleteRecord({ apiKey, appId, indexName, paths });
 };
 
@@ -94,7 +94,7 @@ export const getClientPayload = () => {
    * @type {{org: string, path: string, site: string, status: number}}
    */
   const clientPayload: ClientPayload = context.payload.client_payload;
-  console.log('Logging getClientPayload: ', clientPayload);
+  console.log('Logging index::getClientPayload...', clientPayload);
   if (!clientPayload) {
     throw new Error('No client payload found.');
   }
@@ -106,6 +106,7 @@ export const getClientPayload = () => {
  * @param eventType
  */
 export const validEventType = (eventType: string) => {
+  console.log('Logging index::validEventType...', eventType);
   if (
     eventType === RESOURCE_PUBLISHED_EVENT_TYPE ||
     eventType === RESOURCES_PUBLISHED_EVENT_TYPE ||
@@ -122,7 +123,7 @@ export const validEventType = (eventType: string) => {
  */
 export const getEventType = () => {
   const eventType = context.payload.action;
-  console.log('Logging getEventType: ', eventType);
+  console.log('Logging index::getEventType...', eventType);
   if (!validEventType(eventType)) {
     throw new Error(`Unsupported eventType=${eventType}`);
   }
@@ -130,7 +131,7 @@ export const getEventType = () => {
 };
 
 export const getPathsFromClientPayload = (clientPayload: ClientPayload) => {
-  console.log('Logging extractPathsFromPayload...');
+  console.log('Logging index::extractPathsFromPayload...', clientPayload);
   if (clientPayload) {
     if (clientPayload.paths && clientPayload.paths.length > 0) {
       return clientPayload.paths;
@@ -139,14 +140,14 @@ export const getPathsFromClientPayload = (clientPayload: ClientPayload) => {
       return [clientPayload.path];
     }
   }
-  throw new Error(`Unable to proceed due to invalid or missing paths in ClientPayload`);
+  return [];
 };
 
 /**
  * run - main entry point
  */
 export const run = async () => {
-  console.log('Logging runner: ', JSON.stringify(context));
+  console.log('Logging index::runner... ', JSON.stringify(context));
   const { appId, apiKey, indexName, branchName } = getAppCfg();
 
   // process payload
@@ -154,18 +155,23 @@ export const run = async () => {
   const clientPayload = getClientPayload();
   const paths = getPathsFromClientPayload(clientPayload);
 
-  // process event
-  switch (eventType) {
-    case RESOURCE_PUBLISHED_EVENT_TYPE:
-    case RESOURCES_PUBLISHED_EVENT_TYPE:
-      await processPublishEvent({ clientPayload, branchName, apiKey, appId, indexName, paths });
-      break;
-    case RESOURCE_UNPUBLISHED_EVENT_TYPE:
-    case RESOURCES_UNPUBLISHED_EVENT_TYPE:
-      await processUnpublishEvent({ apiKey, appId, indexName, paths });
-      break;
-    default:
-      break;
+  if (paths && paths.length > 0) {
+    // process event
+    switch (eventType) {
+      case RESOURCE_PUBLISHED_EVENT_TYPE:
+      case RESOURCES_PUBLISHED_EVENT_TYPE:
+        await processPublishEvent({ clientPayload, branchName, apiKey, appId, indexName, paths });
+        break;
+      case RESOURCE_UNPUBLISHED_EVENT_TYPE:
+      case RESOURCES_UNPUBLISHED_EVENT_TYPE:
+        await processUnpublishEvent({ apiKey, appId, indexName, paths });
+        break;
+      default:
+        break;
+    }
+  } else {
+    // else nothing to process, exist gracefully.
+    console.log('No paths to process, runner completed');
   }
 };
 

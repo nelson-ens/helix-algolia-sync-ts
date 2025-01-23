@@ -10,14 +10,14 @@ npm i
 ```
 
 ## Linting
-
+Ensure all code are linted and formatted before committing back to the git repository.
 ```sh
 npm run lint
 npm run format
 ```
 
 ## Testing
-
+Ensure all tests passes with decent coverage (60%) before pushing back to the git repository.
 ```shell
 npm run test
 ```
