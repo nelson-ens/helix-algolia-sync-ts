@@ -86,6 +86,20 @@ describe('main index', () => {
     helperSpy2.mockRestore();
   });
 
+  it('should run either processPublishEvent nor processUnPublishEvent', async () => {
+    context.payload.action = 'blah';
+    const helperSpy1 = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
+    const helperSpy2 = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
+
+    await expect(async () => {
+      await myModule.run();
+    }).rejects.toThrowError();
+
+    helperSpy1.mockRestore();
+    helperSpy2.mockRestore();
+    context.payload.action = 'resource-published';
+  });
+
   it('should return appCfg as expected', async () => {
     // Mock the return values for getInput
     (getInput as jest.Mock).mockReturnValueOnce('algolia-application-id');
@@ -183,6 +197,7 @@ describe('main index', () => {
   });
 
   it('should test processPublishEvent successfully', async () => {
+    context.payload.action = 'resource-published';
     const x = await myModule.processPublishEvent({
       clientPayload: {},
       branchName: 'bn',
@@ -196,6 +211,7 @@ describe('main index', () => {
   });
 
   it('should test processUnpublishEvent successfully', async () => {
+    context.payload.action = 'resource-unpublished';
     const x = await myModule.processUnpublishEvent({
       apiKey: 'ak',
       appId: 'ai',
