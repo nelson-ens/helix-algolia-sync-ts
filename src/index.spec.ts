@@ -1,17 +1,10 @@
 import { getInput } from '@actions/core';
 import { context } from '@actions/github';
-import {
-  getAppCfg,
-  getClientPayload,
-  getEventType,
-  getPathsFromClientPayload,
-  processPublishEvent,
-  processUnpublishEvent,
-  validEventType,
-} from './index';
 import { ClientPayload } from './types';
 import { fetchHelixResourceMetadata } from './services/helix';
 import { addOrUpdateRecord, deleteRecord } from './services/algolia';
+
+import * as myModule from './index';
 
 jest.mock('./services/algolia', () => ({
   addOrUpdateRecord: jest.fn(),
@@ -59,12 +52,38 @@ describe('main index', () => {
 
   it('should return clientPayload', async () => {
     // Mock the return values for getInput
-    expect(getClientPayload()).toEqual({
+    expect(myModule.getClientPayload()).toEqual({
       org: 'nelson-ens',
       path: '/index.md',
       site: 'aem-eds-boilerplate',
       status: 200,
     });
+  });
+
+  it('should run processPublishEvent', async () => {
+    context.payload.action = 'resource-published';
+    const helperSpy1 = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
+    const helperSpy2 = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
+
+    const x = await myModule.run();
+    expect(helperSpy1).toHaveBeenCalledTimes(1);
+    expect(helperSpy2).toHaveBeenCalledTimes(0);
+
+    helperSpy1.mockRestore();
+    helperSpy2.mockRestore();
+  });
+
+  it('should run processUnPublishEvent', async () => {
+    context.payload.action = 'resource-unpublished';
+    const helperSpy1 = jest.spyOn(myModule, 'processUnpublishEvent').mockImplementation(async () => {});
+    const helperSpy2 = jest.spyOn(myModule, 'processPublishEvent').mockImplementation(async () => {});
+
+    const x = await myModule.run();
+    expect(helperSpy1).toHaveBeenCalledTimes(1);
+    expect(helperSpy2).toHaveBeenCalledTimes(0);
+
+    helperSpy1.mockRestore();
+    helperSpy2.mockRestore();
   });
 
   it('should return appCfg as expected', async () => {
@@ -74,7 +93,7 @@ describe('main index', () => {
     (getInput as jest.Mock).mockReturnValueOnce('algolia-index-name');
     context.payload.client_payload = undefined;
 
-    expect(getAppCfg()).toEqual({
+    expect(myModule.getAppCfg()).toEqual({
       appId: 'algolia-application-id',
       apiKey: 'algolia-api-key',
       indexName: 'algolia-index-name',
@@ -89,7 +108,7 @@ describe('main index', () => {
     (getInput as jest.Mock).mockReturnValueOnce('algolia-index-name');
     context.payload.client_payload = undefined;
 
-    expect(getClientPayload).toThrowError('No client payload found.');
+    expect(myModule.getClientPayload).toThrowError('No client payload found.');
   });
 
   it('should return an array of paths', async () => {
@@ -99,12 +118,12 @@ describe('main index', () => {
       status: 200,
     };
 
-    expect(getPathsFromClientPayload({ ...clientPayloadMock, path: '/index.md' } as ClientPayload)).toEqual([
+    expect(myModule.getPathsFromClientPayload({ ...clientPayloadMock, path: '/index.md' } as ClientPayload)).toEqual([
       '/index.md',
     ]);
 
     expect(
-      getPathsFromClientPayload({
+      myModule.getPathsFromClientPayload({
         ...clientPayloadMock,
         paths: ['/blogs/blog1.md', '/blogs/blog2.md', '/blogs/blog3.md'],
       } as ClientPayload)
@@ -119,11 +138,11 @@ describe('main index', () => {
     };
 
     expect(() => {
-      getPathsFromClientPayload(clientPayloadMock);
+      myModule.getPathsFromClientPayload(clientPayloadMock);
     }).toThrowError('Unable to proceed due to invalid or missing paths in ClientPayload');
 
     expect(() => {
-      getPathsFromClientPayload({
+      myModule.getPathsFromClientPayload({
         ...clientPayloadMock,
         path: '',
       } as ClientPayload);
@@ -134,36 +153,37 @@ describe('main index', () => {
     // Mock the return values for getInput
     context.payload.client_payload = undefined;
 
-    expect(validEventType('resource-published')).toBeTruthy();
-    expect(validEventType('resources-published')).toBeTruthy();
-    expect(validEventType('resource-unpublished')).toBeTruthy();
-    expect(validEventType('resources-unpublished')).toBeTruthy();
+    expect(myModule.validEventType('resource-published')).toBeTruthy();
+    expect(myModule.validEventType('resources-published')).toBeTruthy();
+    expect(myModule.validEventType('resource-unpublished')).toBeTruthy();
+    expect(myModule.validEventType('resources-unpublished')).toBeTruthy();
   });
 
   it('should return falsy if eventType is valid', async () => {
     // Mock the return values for getInput
     context.payload.client_payload = undefined;
 
-    expect(validEventType('RESOURCE-PUBLISHED')).toBeFalsy();
-    expect(validEventType('resource-publishedd')).toBeFalsy();
-    expect(validEventType('RESOURCE-UNPUBLISHED')).toBeFalsy();
-    expect(validEventType('resource-unpublishedd')).toBeFalsy();
-    expect(validEventType('')).toBeFalsy();
-    expect(validEventType(null)).toBeFalsy();
-    expect(validEventType(undefined)).toBeFalsy();
+    expect(myModule.validEventType('RESOURCE-PUBLISHED')).toBeFalsy();
+    expect(myModule.validEventType('resource-publishedd')).toBeFalsy();
+    expect(myModule.validEventType('RESOURCE-UNPUBLISHED')).toBeFalsy();
+    expect(myModule.validEventType('resource-unpublishedd')).toBeFalsy();
+    expect(myModule.validEventType('')).toBeFalsy();
+    expect(myModule.validEventType(null)).toBeFalsy();
+    expect(myModule.validEventType(undefined)).toBeFalsy();
   });
 
   it('should return eventType', async () => {
-    expect(getEventType()).toBe('resource-published');
+    context.payload.action = 'resource-published';
+    expect(myModule.getEventType()).toBe('resource-published');
   });
 
   it('should throw an error in extractEventType', async () => {
     context.payload.action = 'blah';
-    expect(getEventType).toThrowError('Unsupported eventType=blah');
+    expect(myModule.getEventType).toThrowError('Unsupported eventType=blah');
   });
 
   it('should test processPublishEvent successfully', async () => {
-    const x = await processPublishEvent({
+    const x = await myModule.processPublishEvent({
       clientPayload: {},
       branchName: 'bn',
       apiKey: 'ak',
@@ -176,7 +196,7 @@ describe('main index', () => {
   });
 
   it('should test processUnpublishEvent successfully', async () => {
-    const x = await processUnpublishEvent({
+    const x = await myModule.processUnpublishEvent({
       apiKey: 'ak',
       appId: 'ai',
       indexName: 'in',
