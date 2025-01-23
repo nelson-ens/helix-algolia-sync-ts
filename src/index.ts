@@ -2,13 +2,7 @@ import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
 import { fetchHelixResourceMetadata } from './services/helix';
 import { addOrUpdateRecord, deleteRecord } from './services/algolia';
-import { AppCfg, ClientPayload, FetchHlxResMdParam } from './types';
-import {
-  RESOURCE_PUBLISHED_EVENT_TYPE,
-  RESOURCE_UNPUBLISHED_EVENT_TYPE,
-  RESOURCES_PUBLISHED_EVENT_TYPE,
-  RESOURCES_UNPUBLISHED_EVENT_TYPE,
-} from './utils/constants';
+import { AppCfg, ClientPayload, EVENT_TYPE, FetchHlxResMdParam } from './types';
 
 interface ProcessPublishEventParams {
   clientPayload: ClientPayload;
@@ -107,14 +101,11 @@ export const getClientPayload = () => {
  */
 export const validEventType = (eventType: string) => {
   console.log('Logging index::validEventType...', eventType);
-  if (
-    eventType === RESOURCE_PUBLISHED_EVENT_TYPE ||
-    eventType === RESOURCES_PUBLISHED_EVENT_TYPE ||
-    eventType === RESOURCE_UNPUBLISHED_EVENT_TYPE ||
-    eventType === RESOURCES_UNPUBLISHED_EVENT_TYPE
-  ) {
+
+  if (Object.values(EVENT_TYPE).includes(eventType as EVENT_TYPE)) {
     return true;
   }
+
   return false;
 };
 
@@ -127,7 +118,7 @@ export const getEventType = () => {
   if (!validEventType(eventType)) {
     throw new Error(`Unsupported eventType=${eventType}`);
   }
-  return eventType;
+  return eventType as EVENT_TYPE;
 };
 
 export const getPathsFromClientPayload = (clientPayload: ClientPayload) => {
@@ -158,12 +149,12 @@ export const run = async () => {
   if (paths && paths.length > 0) {
     // process event
     switch (eventType) {
-      case RESOURCE_PUBLISHED_EVENT_TYPE:
-      case RESOURCES_PUBLISHED_EVENT_TYPE:
+      case EVENT_TYPE.RESOURCE_PUBLISHED:
+      case EVENT_TYPE.RESOURCES_PUBLISHED:
         await processPublishEvent({ clientPayload, branchName, apiKey, appId, indexName, paths });
         break;
-      case RESOURCE_UNPUBLISHED_EVENT_TYPE:
-      case RESOURCES_UNPUBLISHED_EVENT_TYPE:
+      case EVENT_TYPE.RESOURCE_UNPUBLISHED:
+      case EVENT_TYPE.RESOURCES_UNPUBLISHED:
         await processUnpublishEvent({ apiKey, appId, indexName, paths });
         break;
       default:

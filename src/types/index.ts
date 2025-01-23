@@ -68,3 +68,10 @@ export interface ClientPayload {
   path?: string;
   site?: string;
 }
+
+export enum EVENT_TYPE {
+  RESOURCE_PUBLISHED = 'resource-published',
+  RESOURCES_PUBLISHED = 'resources-published',
+  RESOURCE_UNPUBLISHED = 'resource-unpublished',
+  RESOURCES_UNPUBLISHED = 'resources-unpublished',
+}
