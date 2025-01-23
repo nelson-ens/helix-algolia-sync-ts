@@ -2,7 +2,7 @@ import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
 import { fetchHelixResourceMetadata } from './services/helix';
 import { addOrUpdateRecord, deleteRecord } from './services/algolia';
-import { AppCfg, ClientPayload, EVENT_TYPE, FetchHlxResMdParam } from './types';
+import { AppCfg, ClientPayload, EventType, FetchHlxResMdParam } from './types';
 
 interface ProcessPublishEventParams {
   clientPayload: ClientPayload;
@@ -102,7 +102,7 @@ export const getClientPayload = () => {
 export const validEventType = (eventType: string) => {
   console.log('Logging index::validEventType...', eventType);
 
-  if (Object.values(EVENT_TYPE).includes(eventType as EVENT_TYPE)) {
+  if (Object.values(EventType).includes(eventType as EventType)) {
     return true;
   }
 
@@ -118,7 +118,7 @@ export const getEventType = () => {
   if (!validEventType(eventType)) {
     throw new Error(`Unsupported eventType=${eventType}`);
   }
-  return eventType as EVENT_TYPE;
+  return eventType as EventType;
 };
 
 export const getPathsFromClientPayload = (clientPayload: ClientPayload) => {
@@ -149,12 +149,12 @@ export const run = async () => {
   if (paths && paths.length > 0) {
     // process event
     switch (eventType) {
-      case EVENT_TYPE.RESOURCE_PUBLISHED:
-      case EVENT_TYPE.RESOURCES_PUBLISHED:
+      case EventType.RESOURCE_PUBLISHED:
+      case EventType.RESOURCES_PUBLISHED:
         await processPublishEvent({ clientPayload, branchName, apiKey, appId, indexName, paths });
         break;
-      case EVENT_TYPE.RESOURCE_UNPUBLISHED:
-      case EVENT_TYPE.RESOURCES_UNPUBLISHED:
+      case EventType.RESOURCE_UNPUBLISHED:
+      case EventType.RESOURCES_UNPUBLISHED:
         await processUnpublishEvent({ apiKey, appId, indexName, paths });
         break;
       default:

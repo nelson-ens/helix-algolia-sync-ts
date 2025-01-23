@@ -69,7 +69,7 @@ export interface ClientPayload {
   site?: string;
 }
 
-export enum EVENT_TYPE {
+export enum EventType {
   RESOURCE_PUBLISHED = 'resource-published',
   RESOURCES_PUBLISHED = 'resources-published',
   RESOURCE_UNPUBLISHED = 'resource-unpublished',
