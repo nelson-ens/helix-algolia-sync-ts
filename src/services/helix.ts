@@ -31,7 +31,7 @@ export const buildAlgoliaRecord = (hlxResource: FetchHlxResMdResponse): AlgoliaR
  * @param branch
  * @param path
  */
-const fetchHelixResourceMetadata = async ({
+export const fetchHelixResourceMetadata = async ({
   owner,
   repo,
   branch,
@@ -62,5 +62,3 @@ const fetchHelixResourceMetadata = async ({
   // transform to AlgRecord
   return buildAlgoliaRecord(jsonRsp);
 };
-
-export default fetchHelixResourceMetadata;

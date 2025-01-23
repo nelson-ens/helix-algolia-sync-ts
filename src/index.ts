@@ -1,6 +1,6 @@
 import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
-import fetchHelixResourceMetadata from './services/helix';
+import { fetchHelixResourceMetadata } from './services/helix';
 import { addOrUpdateRecord, deleteRecord } from './services/algolia';
 import { AppCfg, ClientPayload, FetchHlxResMdParam } from './types';
 import {

@@ -1,7 +1,26 @@
 import { getInput } from '@actions/core';
 import { context } from '@actions/github';
-import { getAppCfg, getClientPayload, getEventType, getPathsFromClientPayload, validEventType } from './index';
+import {
+  getAppCfg,
+  getClientPayload,
+  getEventType,
+  getPathsFromClientPayload,
+  processPublishEvent,
+  processUnpublishEvent,
+  validEventType,
+} from './index';
 import { ClientPayload } from './types';
+import { fetchHelixResourceMetadata } from './services/helix';
+import { addOrUpdateRecord, deleteRecord } from './services/algolia';
+
+jest.mock('./services/algolia', () => ({
+  addOrUpdateRecord: jest.fn(),
+  deleteRecord: jest.fn(),
+}));
+
+jest.mock('./services/helix', () => ({
+  fetchHelixResourceMetadata: jest.fn(),
+}));
 
 // Mock getInput and setFailed functions
 jest.mock('@actions/core', () => ({
@@ -141,5 +160,28 @@ describe('main index', () => {
   it('should throw an error in extractEventType', async () => {
     context.payload.action = 'blah';
     expect(getEventType).toThrowError('Unsupported eventType=blah');
+  });
+
+  it('should test processPublishEvent successfully', async () => {
+    const x = await processPublishEvent({
+      clientPayload: {},
+      branchName: 'bn',
+      apiKey: 'ak',
+      appId: 'ai',
+      indexName: 'in',
+      paths: ['/blogs/blog1.md', '/blogs/blog2.md', '/blogs/blog3.md'],
+    });
+    expect(fetchHelixResourceMetadata).toBeCalledTimes(3);
+    expect(addOrUpdateRecord).toBeCalledTimes(1);
+  });
+
+  it('should test processUnpublishEvent successfully', async () => {
+    const x = await processUnpublishEvent({
+      apiKey: 'ak',
+      appId: 'ai',
+      indexName: 'in',
+      paths: ['/blogs/blog1.md', '/blogs/blog2.md', '/blogs/blog3.md'],
+    });
+    expect(deleteRecord).toBeCalledTimes(1);
   });
 });

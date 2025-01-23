@@ -1,6 +1,5 @@
-import fetchHelixResourceMetadata, { buildAlgoliaRecord } from './helix';
+import { buildAlgoliaRecord, fetchHelixResourceMetadata } from './helix';
 import { FetchHlxResMdResponse } from '../types';
-import { getPathsFromClientPayload } from '../index';
 
 const goodResponse = {
   webPath: '/blogs/blog1',
