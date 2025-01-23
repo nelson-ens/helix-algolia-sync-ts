@@ -1,7 +1,6 @@
 import { searchClient } from '@algolia/client-search';
-import { faker } from '@faker-js/faker';
 import md5 from '../utils/stringUtils';
-import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
+import { AlgoliaRecord } from '../types';
 
 interface DeleteRecordParams {
   appId: string;

@@ -2,25 +2,26 @@ import { faker } from '@faker-js/faker';
 import { ADMIN_HLX_PAGE_INDEX_URL_PREFIX } from '../utils/constants';
 import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
 
-export const transformToAlgRecord = (fetchHlxResMdResponse: FetchHlxResMdResponse): AlgoliaRecord => {
-  console.log(`Logging transformToAlgRecord...`, fetchHlxResMdResponse?.results[0]?.record ?? {});
-  // uses faker to populate records for development purpose
-  const slug = faker.lorem.slug();
-  const newResourcePath = `/blogs/${slug}.md`;
-  const record = {
-    webPath: `/blogs/${slug}`,
-    resourcePath: `${newResourcePath}`,
-    name: `${faker.food.dish()}`,
-    lastModified: faker.date.anytime().getTime(),
-    title: `${faker.food.dish()}`,
-    image: `${faker.image.url()}`,
-    description: `${faker.food.description()}`,
-    category: `${faker.food.ethnicCategory()}`,
-    author: `${faker.book.author()}`,
-    date: faker.date.anytime().getTime(),
-  } as AlgoliaRecord;
-  console.log('Logging transformToAlgRecord: ', record);
-  return record;
+export const buildAlgoliaRecord = (hlxResource: FetchHlxResMdResponse): AlgoliaRecord => {
+  console.log(`Logging buildAlgoliaRecord...`, hlxResource);
+
+  if (hlxResource && hlxResource.results && hlxResource.results[0] && hlxResource.results[0].record) {
+    // TODO:  replace faker with real data once schema is ready
+    return {
+      webPath: hlxResource.webPath,
+      resourcePath: hlxResource.resourcePath,
+      name: `${faker.food.dish()}`,
+      lastModified: faker.date.anytime().getTime(),
+      title: `${faker.food.dish()}`,
+      image: `${faker.image.url()}`,
+      description: `${faker.food.description()}`,
+      category: `${faker.food.ethnicCategory()}`,
+      author: `${faker.book.author()}`,
+      date: faker.date.anytime().getTime(),
+    } as AlgoliaRecord;
+  }
+
+  return undefined;
 };
 
 /**
@@ -46,13 +47,20 @@ const fetchHelixResourceMetadata = async ({
   console.log(`Logging fetchHelixResourceMetadata: `, { url, modPath });
 
   const response = await fetch(url);
+  console.log(`Fetch response: `, JSON.stringify(response));
+
   if (!response.ok)
     throw new Error(`Failed to fetch Helix resource metadata: ${response.status} ${response.statusText}`);
 
-  const result = await response.json();
-  console.log(`Logging fetchHelixResourceMetadata result: `, result);
+  const jsonRsp = await response.json();
+  console.log(`Logging fetchHelixResourceMetadata result: `, JSON.stringify(jsonRsp));
 
-  return transformToAlgRecord(result);
+  // page does not exist
+  if (JSON.stringify(jsonRsp).includes('requested path returned a 301 or 404')) {
+    return undefined;
+  }
+  // transform to AlgRecord
+  return buildAlgoliaRecord(jsonRsp);
 };
 
 export default fetchHelixResourceMetadata;

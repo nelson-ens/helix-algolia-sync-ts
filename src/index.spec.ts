@@ -1,6 +1,6 @@
-import { getInput, setFailed } from '@actions/core';
+import { getInput } from '@actions/core';
 import { context } from '@actions/github';
-import { checkClientPayload, extractPathsFromPayload, extractEventType, run, validEventType } from './index';
+import { getAppCfg, getClientPayload, getEventType, getPathsFromClientPayload, validEventType } from './index';
 import { ClientPayload } from './types';
 
 // Mock getInput and setFailed functions
@@ -40,11 +40,26 @@ describe('main index', () => {
 
   it('should return clientPayload', async () => {
     // Mock the return values for getInput
-    expect(checkClientPayload()).toEqual({
+    expect(getClientPayload()).toEqual({
       org: 'nelson-ens',
       path: '/index.md',
       site: 'aem-eds-boilerplate',
       status: 200,
+    });
+  });
+
+  it('should return appCfg as expected', async () => {
+    // Mock the return values for getInput
+    (getInput as jest.Mock).mockReturnValueOnce('algolia-application-id');
+    (getInput as jest.Mock).mockReturnValueOnce('algolia-api-key');
+    (getInput as jest.Mock).mockReturnValueOnce('algolia-index-name');
+    context.payload.client_payload = undefined;
+
+    expect(getAppCfg()).toEqual({
+      appId: 'algolia-application-id',
+      apiKey: 'algolia-api-key',
+      indexName: 'algolia-index-name',
+      branchName: 'main',
     });
   });
 
@@ -55,7 +70,7 @@ describe('main index', () => {
     (getInput as jest.Mock).mockReturnValueOnce('algolia-index-name');
     context.payload.client_payload = undefined;
 
-    expect(checkClientPayload).toThrowError('No client payload found.');
+    expect(getClientPayload).toThrowError('No client payload found.');
   });
 
   it('should return an array of paths', async () => {
@@ -65,12 +80,12 @@ describe('main index', () => {
       status: 200,
     };
 
-    expect(extractPathsFromPayload({ ...clientPayloadMock, path: '/index.md' } as ClientPayload)).toEqual([
+    expect(getPathsFromClientPayload({ ...clientPayloadMock, path: '/index.md' } as ClientPayload)).toEqual([
       '/index.md',
     ]);
 
     expect(
-      extractPathsFromPayload({
+      getPathsFromClientPayload({
         ...clientPayloadMock,
         paths: ['/blogs/blog1.md', '/blogs/blog2.md', '/blogs/blog3.md'],
       } as ClientPayload)
@@ -85,11 +100,11 @@ describe('main index', () => {
     };
 
     expect(() => {
-      extractPathsFromPayload(clientPayloadMock);
+      getPathsFromClientPayload(clientPayloadMock);
     }).toThrowError('Unable to proceed due to invalid or missing paths in ClientPayload');
 
     expect(() => {
-      extractPathsFromPayload({
+      getPathsFromClientPayload({
         ...clientPayloadMock,
         path: '',
       } as ClientPayload);
@@ -120,11 +135,11 @@ describe('main index', () => {
   });
 
   it('should return eventType', async () => {
-    expect(extractEventType()).toBe('resource-published');
+    expect(getEventType()).toBe('resource-published');
   });
 
   it('should throw an error in extractEventType', async () => {
     context.payload.action = 'blah';
-    expect(extractEventType).toThrowError('Unsupported eventType=blah');
+    expect(getEventType).toThrowError('Unsupported eventType=blah');
   });
 });

@@ -1,20 +1,43 @@
-import { deleteRecord, addOrUpdateRecord } from './algolia';
+import { searchClient } from '@algolia/client-search';
+import { addOrUpdateRecord, deleteRecord } from './algolia';
+
+// Mock getInput and setFailed functions
+jest.mock('@algolia/client-search', () => {
+  const mockClient = { addOrUpdateObject: jest.fn(), deleteObject: jest.fn() };
+  return { searchClient: jest.fn(() => mockClient) };
+});
+
+// jest.mock('@algolia/client-search');
 
 describe('algolia service', () => {
-  beforeEach(() => {});
+  beforeEach(() => {
+    // Clear all mock function calls and reset mock implementation
+    jest.clearAllMocks();
+  });
 
   afterEach(() => {});
 
   // Assert if setTimeout was called properly
-  it('tests fetchHelixResourceMetadata', async () => {
-    expect(true).toBe(true);
+  it('tests addOrUpdateRecord', async () => {
+    const client = searchClient('a', 'b');
+    const x = await addOrUpdateRecord({
+      appId: 'appId',
+      apiKey: 'apiKey',
+      indexName: 'indexName',
+      records: [{ resourcePath: '/x/y1.md' }, { resourcePath: '/x/y2.md' }],
+    });
+    expect(client.addOrUpdateObject).toBeCalledTimes(2);
   });
 
-  it('tests fetchHelixResourceMetadata', async () => {
-    expect(true).toBe(true);
-  });
-
-  it('tests fetchHelixResourceMetadata', async () => {
-    expect(true).toBe(true);
+  // Assert if setTimeout was called properly
+  it('tests deleteRecord', async () => {
+    const client = searchClient('a', 'b');
+    const x = await deleteRecord({
+      appId: 'appId',
+      apiKey: 'apiKey',
+      indexName: 'indexName',
+      paths: ['/x/y1.md', '/x/y2.md'],
+    });
+    expect(client.deleteObject).toBeCalledTimes(2);
   });
 });

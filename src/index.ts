@@ -30,11 +30,12 @@ interface ProcessUnpublishEventParams {
  *
  */
 export const getAppCfg = () => {
+  console.log('Logging getAppCfg...');
   const appId = getInput('algolia-application-id');
   const apiKey = getInput('algolia-api-key');
-  const indexName = getInput('algolia-index-name') || 'asdf';
+  const indexName = getInput('algolia-index-name') || 'asdf'; // TODO: remove 'asdf' default
   const branchName = context.ref.replace('refs/heads/', '');
-  console.log('Logging getEnvs:', { appId, apiKey, indexName, branchName });
+  console.log('Logging getAppCfg:', { appId, apiKey, indexName, branchName });
   return <AppCfg>{ appId, apiKey, indexName, branchName };
 };
 
@@ -45,6 +46,7 @@ export const getAppCfg = () => {
  * @param apiKey
  * @param appId
  * @param indexName
+ * @param paths
  */
 export const processPublishEvent = async ({
   clientPayload,
@@ -54,7 +56,7 @@ export const processPublishEvent = async ({
   indexName,
   paths,
 }: ProcessPublishEventParams) => {
-  console.log('Logging processPublishEvent');
+  console.log('Logging processPublishEvent...');
   const promises = [];
   for (let i = 0; i < paths.length; i += 1) {
     const path = paths[i];
@@ -67,7 +69,8 @@ export const processPublishEvent = async ({
       })
     );
   }
-  const records = await Promise.all(promises);
+  let records = await Promise.all(promises);
+  records = records.filter((element) => element !== undefined);
   await addOrUpdateRecord({ apiKey, appId, indexName, records });
 };
 
@@ -76,22 +79,22 @@ export const processPublishEvent = async ({
  * @param apiKey
  * @param appId
  * @param indexName
- * @param clientPayload
+ * @param paths
  */
 export const processUnpublishEvent = async ({ apiKey, appId, indexName, paths }: ProcessUnpublishEventParams) => {
-  console.log('Logging processUnpublishEvent');
+  console.log('Logging processUnpublishEvent...');
   await deleteRecord({ apiKey, appId, indexName, paths });
 };
 
 /**
  *
  */
-export const checkClientPayload = () => {
+export const getClientPayload = () => {
   /**
    * @type {{org: string, path: string, site: string, status: number}}
    */
   const clientPayload: ClientPayload = context.payload.client_payload;
-  console.log('Logging checkClientPayload: ', clientPayload);
+  console.log('Logging getClientPayload: ', clientPayload);
   if (!clientPayload) {
     throw new Error('No client payload found.');
   }
@@ -117,7 +120,7 @@ export const validEventType = (eventType: string) => {
 /**
  *
  */
-export const extractEventType = () => {
+export const getEventType = () => {
   const eventType = context.payload.action;
   console.log('Logging getEventType: ', eventType);
   if (!validEventType(eventType)) {
@@ -126,8 +129,8 @@ export const extractEventType = () => {
   return eventType;
 };
 
-export const extractPathsFromPayload = (clientPayload: ClientPayload) => {
-  console.log('Logging extractPathsFromPayload');
+export const getPathsFromClientPayload = (clientPayload: ClientPayload) => {
+  console.log('Logging extractPathsFromPayload...');
   if (clientPayload) {
     if (clientPayload.paths && clientPayload.paths.length > 0) {
       return clientPayload.paths;
@@ -143,12 +146,15 @@ export const extractPathsFromPayload = (clientPayload: ClientPayload) => {
  * run - main entry point
  */
 export const run = async () => {
-  console.log('Logging run: ', JSON.stringify(context));
+  console.log('Logging runner: ', JSON.stringify(context));
   const { appId, apiKey, indexName, branchName } = getAppCfg();
-  const clientPayload = checkClientPayload();
-  const eventType = extractEventType();
-  const paths: string[] = extractPathsFromPayload(clientPayload);
 
+  // process payload
+  const eventType = getEventType();
+  const clientPayload = getClientPayload();
+  const paths = getPathsFromClientPayload(clientPayload);
+
+  // process event
   switch (eventType) {
     case RESOURCE_PUBLISHED_EVENT_TYPE:
     case RESOURCES_PUBLISHED_EVENT_TYPE:

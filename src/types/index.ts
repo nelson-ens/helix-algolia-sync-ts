@@ -45,6 +45,7 @@ export interface FetchHlxResMdResponseResultRecord extends Record<string, unknow
 
 export interface FetchHlxResMdResponseResult {
   name?: string;
+  message?: string;
   record?: FetchHlxResMdResponseResultRecord;
 }
 
