@@ -1,7 +1,12 @@
 import { faker } from '@faker-js/faker';
-import { ADMIN_HLX_PAGE_INDEX_URL_PREFIX } from '../utils/constants';
 import { AlgoliaRecord, FetchHlxResMdResponse } from '../types';
 
+const ADMIN_HLX_PAGE_INDEX_URL_PREFIX = 'https://admin.hlx.page/index';
+
+/**
+ *
+ * @param hlxResource
+ */
 export const buildAlgoliaRecord = (hlxResource: FetchHlxResMdResponse): AlgoliaRecord => {
   console.log(`Logging helix::buildAlgoliaRecord...`, hlxResource);
 

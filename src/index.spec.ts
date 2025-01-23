@@ -2,13 +2,13 @@ import { getInput } from '@actions/core';
 import { context } from '@actions/github';
 import { ClientPayload } from './types';
 import { fetchHelixResourceMetadata } from './services/helix';
-import { addOrUpdateRecord, deleteRecord } from './services/algolia';
+import { addOrUpdateRecords, deleteRecords } from './services/algolia';
 
 import * as myModule from './index';
 
 jest.mock('./services/algolia', () => ({
-  addOrUpdateRecord: jest.fn(),
-  deleteRecord: jest.fn(),
+  addOrUpdateRecords: jest.fn(),
+  deleteRecords: jest.fn(),
 }));
 
 jest.mock('./services/helix', () => ({
@@ -218,7 +218,7 @@ describe('main index', () => {
       paths: ['/blogs/blog1.md', '/blogs/blog2.md', '/blogs/blog3.md'],
     });
     expect(fetchHelixResourceMetadata).toBeCalledTimes(3);
-    expect(addOrUpdateRecord).toBeCalledTimes(1);
+    expect(addOrUpdateRecords).toBeCalledTimes(1);
   });
 
   it('should test processUnpublishEvent successfully', async () => {
@@ -229,7 +229,7 @@ describe('main index', () => {
       indexName: 'in',
       paths: ['/blogs/blog1.md', '/blogs/blog2.md', '/blogs/blog3.md'],
     });
-    expect(deleteRecord).toBeCalledTimes(1);
+    expect(deleteRecords).toBeCalledTimes(1);
   });
 
   it('should not run neither processPublishEvent nor processUnPublishEvent', async () => {

@@ -1,5 +1,5 @@
 import { searchClient } from '@algolia/client-search';
-import { addOrUpdateRecord, deleteRecord } from './algolia';
+import { addOrUpdateRecords, deleteRecords } from './algolia';
 
 // Mock getInput and setFailed functions
 jest.mock('@algolia/client-search', () => {
@@ -18,9 +18,9 @@ describe('algolia service', () => {
   afterEach(() => {});
 
   // Assert if setTimeout was called properly
-  it('tests addOrUpdateRecord', async () => {
+  it('tests addOrUpdateRecords to ensure addOrUpdateObject was triggered 2 times', async () => {
     const client = searchClient('a', 'b');
-    const x = await addOrUpdateRecord({
+    const x = await addOrUpdateRecords({
       appId: 'appId',
       apiKey: 'apiKey',
       indexName: 'indexName',
@@ -30,9 +30,9 @@ describe('algolia service', () => {
   });
 
   // Assert if setTimeout was called properly
-  it('tests deleteRecord', async () => {
+  it('tests deleteRecords to ensure deleteObject was triggered 2 times', async () => {
     const client = searchClient('a', 'b');
-    const x = await deleteRecord({
+    const x = await deleteRecords({
       appId: 'appId',
       apiKey: 'apiKey',
       indexName: 'indexName',

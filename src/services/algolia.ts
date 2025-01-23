@@ -23,8 +23,8 @@ interface AddOrUpdateRecordParams {
  * @param indexName
  * @param resourcePath
  */
-export const addOrUpdateRecord = async ({ appId, apiKey, indexName, records }: AddOrUpdateRecordParams) => {
-  console.log('Logging algolia::addOrUpdateRecord... ', records);
+export const addOrUpdateRecords = async ({ appId, apiKey, indexName, records }: AddOrUpdateRecordParams) => {
+  console.log('Logging algolia::addOrUpdateRecords... ', records);
   const client = searchClient(appId, apiKey);
   const response = await Promise.all(
     records.map((r) =>
@@ -36,7 +36,7 @@ export const addOrUpdateRecord = async ({ appId, apiKey, indexName, records }: A
     )
   );
 
-  console.log(`algolia::addOrUpdateRecord response: `, response);
+  console.log(`algolia::addOrUpdateRecords response: `, response);
 };
 
 /**
@@ -46,8 +46,8 @@ export const addOrUpdateRecord = async ({ appId, apiKey, indexName, records }: A
  * @param indexName
  * @param resourcePath
  */
-export const deleteRecord = async ({ appId, apiKey, indexName, paths }: DeleteRecordParams) => {
-  console.log('Logging algolia::deleteRecord... ', paths);
+export const deleteRecords = async ({ appId, apiKey, indexName, paths }: DeleteRecordParams) => {
+  console.log('Logging algolia::deleteRecords... ', paths);
   const client = searchClient(appId, apiKey);
 
   const response = await Promise.all(
@@ -59,5 +59,5 @@ export const deleteRecord = async ({ appId, apiKey, indexName, paths }: DeleteRe
     )
   );
 
-  console.log(`algolia::deleteRecord response: `, response);
+  console.log(`algolia::deleteRecords response: `, response);
 };

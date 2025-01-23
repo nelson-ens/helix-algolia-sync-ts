@@ -1,7 +1,7 @@
 import { getInput, setFailed } from '@actions/core';
 import { context } from '@actions/github';
 import { fetchHelixResourceMetadata } from './services/helix';
-import { addOrUpdateRecord, deleteRecord } from './services/algolia';
+import { addOrUpdateRecords, deleteRecords } from './services/algolia';
 import { AppCfg, ClientPayload, EventType, FetchHlxResMdParam } from './types';
 
 interface ProcessPublishEventParams {
@@ -65,7 +65,7 @@ export const processPublishEvent = async ({
   }
   let records = await Promise.all(promises);
   records = records.filter((element) => element !== undefined);
-  await addOrUpdateRecord({ apiKey, appId, indexName, records });
+  await addOrUpdateRecords({ apiKey, appId, indexName, records });
 };
 
 /**
@@ -77,7 +77,7 @@ export const processPublishEvent = async ({
  */
 export const processUnpublishEvent = async ({ apiKey, appId, indexName, paths }: ProcessUnpublishEventParams) => {
   console.log('Logging index::processUnpublishEvent...');
-  await deleteRecord({ apiKey, appId, indexName, paths });
+  await deleteRecords({ apiKey, appId, indexName, paths });
 };
 
 /**
@@ -121,6 +121,10 @@ export const getEventType = () => {
   return eventType as EventType;
 };
 
+/**
+ *
+ * @param clientPayload
+ */
 export const getPathsFromClientPayload = (clientPayload: ClientPayload) => {
   console.log('Logging index::extractPathsFromPayload...', clientPayload);
   if (clientPayload) {
@@ -135,7 +139,7 @@ export const getPathsFromClientPayload = (clientPayload: ClientPayload) => {
 };
 
 /**
- * run - main entry point
+ * main runner
  */
 export const run = async () => {
   console.log('Logging index::runner... ', JSON.stringify(context));
